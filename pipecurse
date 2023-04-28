@@ -1,0 +1,93 @@
+#!/bin/python3
+# a script to show the available sound devices and make connecvtions between them
+# using ncurses for the UI and utilizing vim-like keybindings
+
+import curses
+from curses import wrapper
+import time
+import random
+import subprocess
+
+def main(stdscr):
+    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    stdscr.nodelay(True)
+    # get screen size
+    screenWidth = stdscr.getmaxyx()[1]
+    screenHeight = stdscr.getmaxyx()[0]
+
+    # set up the screen
+    stdscr.clear()
+    stdscr.refresh()
+
+    # set up the main window
+    mainWin = curses.newwin(screenHeight, screenWidth - 2, 0, 0)
+    mainWin.attron(curses.color_pair(1))
+    mainWin.border()
+    mainWin.attroff(curses.color_pair(1))
+    mainWin.refresh()
+
+    # set up the help window
+    helpWin = curses.newwin(screenHeight, 21, 0, screenWidth - 21)
+    helpWin.attron(curses.color_pair(3))
+
+    helpWin.addstr(1, 1, "h: move left")
+    helpWin.addstr(2, 1, "j: move down")
+    helpWin.addstr(3, 1, "k: move up")
+    helpWin.addstr(4, 1, "l: move right")
+    helpWin.addstr(5, 1, "q: quit")
+    helpWin.addstr(6, 1, "r: refresh")
+    helpWin.addstr(7, 1, "s: select")
+    helpWin.addstr(8, 1, "u: unselect")
+    helpWin.addstr(9, 1, "c: connect")
+    helpWin.addstr(10, 1, "d: disconnect")
+
+    helpWin.border()
+    helpWin.attroff(curses.color_pair(3))
+    helpWin.refresh()
+
+    # using subprocess run pw-cli list and store the output in a list of devices
+    devices = subprocess.run(["pw-cli", "list-objects"], capture_output=True, text=True).stdout.splitlines()
+    # draw the device list on screen
+    if devices:
+        for i in range(len(devices)):
+            if isinstance(devices[i], str):
+                mainWin.addstr(i + 1, 1, devices[i][:screenWidth - 20])
+            else:
+                print(f"Device {i} is not a valid string.")
+    else:
+        print("No devices found.")
+
+    mainWin.refresh()
+
+    while True:
+        try:
+            key = stdscr.getkey()
+        except:
+            key = None
+        match key:
+            case "KEY_LEFT" | "h":
+                continue
+            case "KEY_RIGHT" | "l":
+                continue
+            case "KEY_UP" | "k":
+                continue
+            case "KEY_DOWN" | "j":
+                continue
+            case "q":
+                break
+            case _:
+                pass
+
+        time.sleep(0.05)
+
+        mainWin.refresh()
+
+        curses.curs_set(0)
+
+wrapper(main)
